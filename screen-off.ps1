@@ -1,9 +1,9 @@
 ﻿# screen-off.ps1 - display off + keep-awake guard; released on genuine user input
 # v2: 灭屏期间保住移动热点 —— 一次性网卡省电加固 + 热点看门狗（被关自动重开）
 # v3: 根治 —— 灭屏后系统进入 S0 连接待机导致网卡断链/进程冻结/热点被关（Kernel-Power 506 实锤），
-#     一次性加固改为禁用现代待机（PlatformAoAcOverride=0，重启生效）；
 #     看门狗升级：取不到 internet profile 时遍历所有连接配置继续拉起热点（不再跳过），
 #     且仅在状态变化时记日志，避免日志刷屏。
+# v4: 一次性加固合并为单一 hotspot-hardening.ps1（网卡层 + 禁用现代待机，一个 marker 管全部）。
 $ErrorActionPreference = 'SilentlyContinue'
 
 $logDir = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) 'ScreenOff'
@@ -14,9 +14,9 @@ function Log($m) { Add-Content -LiteralPath $logFile -Value ("{0}  {1}" -f (Get-
 Log ('START pid=' + $PID + ' ps=' + $PSVersionTable.PSVersion.ToString())
 
 # ---------------------------------------------------------------- 0) 一次性加固
-# v3：禁用现代待机（需要管理员一次，首次运行弹 UAC，之后因 marker 文件存在而直接跳过）
-$marker = Join-Path $logDir 'hotspot-hardening.v3.done'
-$hardener = Join-Path $PSScriptRoot 'hotspot-hardening-v3.ps1'
+# 合并版加固（网卡层 + 禁用现代待机；需要管理员一次，首次运行弹 UAC，之后因 marker 文件存在而直接跳过）
+$marker = Join-Path $logDir 'hotspot-hardening.done'
+$hardener = Join-Path $PSScriptRoot 'hotspot-hardening.ps1'
 if (-not (Test-Path $marker) -and (Test-Path $hardener)) {
   $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
   if ($isAdmin) {
