@@ -11,7 +11,7 @@ $src = $PSScriptRoot
 $dest = Join-Path $env:APPDATA 'ScreenOff'
 New-Item -ItemType Directory -Force -Path $dest | Out-Null
 
-foreach ($f in 'screen-off.ps1', 'always-awake.ps1', 'hotspot-hardening.ps1', 'hotspot-hardening-v3.ps1') {
+foreach ($f in 'screen-off.ps1', 'always-awake.ps1', 'hotspot-hardening.ps1') {
     Copy-Item -LiteralPath (Join-Path $src $f) -Destination (Join-Path $dest $f) -Force
 }
 Write-Host ('scripts copied to: ' + $dest)
