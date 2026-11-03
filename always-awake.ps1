@@ -2,9 +2,9 @@
 # Single instance via mutex. Reversible: kill this process and remove the Startup shortcut.
 # v3: 看门狗升级 —— 取不到 internet profile 时遍历所有连接配置继续拉起热点（不再跳过）；
 #     启动时立即巡检一次（旧版要等 60 秒才第一次检查）；仅在状态变化时记日志。
-# v4: 尊重手动关闭 —— 检测到"有人操作时热点被关"（90 秒内有键鼠输入）→ 记入手动锁存
-#     （%LOCALAPPDATA%\ScreenOff\hotspot-user-off.flag），不再自动拉起；
-#     用户手动重新打开热点，或按一键灭屏（screen-off 重新接管）时锁存解除。
+# v4: 尊重手动关闭（完全粘滞）—— 检测到"有人操作时热点被关"（90 秒内有键鼠输入）→ 记入手动锁存
+#     （%LOCALAPPDATA%\ScreenOff\hotspot-user-off.flag），此后无论灭屏、重启都不再自动拉起；
+#     只有看门狗观察到热点变回 On（= 用户手动打开）才解除锁存、恢复自动保护。
 $ErrorActionPreference = 'SilentlyContinue'
 
 $created = $false
