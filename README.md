@@ -46,7 +46,7 @@ Notes:
 - Keep-awake: `SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED)`; released when `GetLastInputInfo` reports new input after a ≥ 5 s silent gap.
 - Hotspot watchdog: `NetworkOperatorTetheringManager.TetheringOperationalState`, revived via `StartTetheringAsync`. When no internet connection profile is visible (typical during standby wake windows), it falls back to probing **all** connection profiles instead of skipping — this was the difference between a hotspot dead for 10 hours and one revived within a minute.
 - Modern Standby disable: `HKLM\SYSTEM\CurrentControlSet\Control\Power\PlatformAoAcOverride = 0` (DWORD).
-- **Manual-off respect**: if the hotspot is turned off while someone is using the PC (keyboard/mouse input in the last 90 s), the watchdog treats it as intentional — it records a latch file (`%LOCALAPPDATA%\ScreenOff\hotspot-user-off.flag`) and leaves the hotspot off. Only an unattended drop (no user input) is treated as "Windows killed it" and revived. Pressing 一键灭屏 re-arms keep-alive and clears the latch; turning the hotspot back on manually clears it too.
+- **Manual-off respect (sticky)**: if the hotspot is turned off while someone is using the PC (keyboard/mouse input in the last 90 s), the watchdog treats it as intentional — it records a latch file (`%LOCALAPPDATA%\ScreenOff\hotspot-user-off.flag`) and the hotspot **stays off**: through screen-offs, reboots and everything else. Only turning the hotspot back on manually clears the latch (the watchdog notices the state returning to On and resumes protection). Unattended drops (no user input) are still treated as "Windows killed it" and revived.
 
 ## Requirements
 
@@ -112,7 +112,7 @@ Set-ExecutionPolicy -Scope Process Bypass -Force
 - 防睡眠：`SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED)`；`GetLastInputInfo` 报告出现"≥5 秒静默后的新输入"时释放。
 - 热点看门狗：`NetworkOperatorTetheringManager.TetheringOperationalState` 探活，`StartTetheringAsync` 拉起。取不到 internet 连接配置文件时（待机唤醒窗口内的典型现象），不跳过，而是遍历**所有**连接配置文件继续探活——这是"热点死了 10 小时没人管"和"一分钟内被拉起"的分水岭。
 - 禁用现代待机：`HKLM\SYSTEM\CurrentControlSet\Control\Power\PlatformAoAcOverride = 0`（DWORD）。
-- **尊重手动关闭**：如果热点是在"有人正在使用电脑"时被关掉的（最近 90 秒内有键鼠输入），看门狗会视为你的主动操作——写入锁存文件（`%LOCALAPPDATA%\ScreenOff\hotspot-user-off.flag`）并保持关闭；只有"无人操作时热点悄悄死掉"才判定为系统所杀并自动拉起。按一次一键灭屏会重新接管"保热点"并解除锁存；手动重新打开热点也会解除。
+- **尊重手动关闭（完全粘滞）**：如果热点是在"有人正在使用电脑"时被关掉的（最近 90 秒内有键鼠输入），看门狗会视为你的主动操作——写入锁存文件（`%LOCALAPPDATA%\ScreenOff\hotspot-user-off.flag`），此后热点**一直保持关闭**：灭屏多少次、重启多少次都不会再自动打开。唯一解除方式是你手动把热点重新打开（看门狗观察到状态变回 On，即恢复自动保护）。"无人操作时热点悄悄死掉"仍会被判定为系统所杀并自动拉起。
 
 ## 运行环境
 
