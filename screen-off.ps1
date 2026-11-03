@@ -4,12 +4,20 @@
 #     看门狗升级：取不到 internet profile 时遍历所有连接配置继续拉起热点（不再跳过），
 #     且仅在状态变化时记日志，避免日志刷屏。
 # v4: 一次性加固合并为单一 hotspot-hardening.ps1（网卡层 + 禁用现代待机，一个 marker 管全部）。
+# v5: 尊重手动关闭热点 —— 常驻脚本在"有人操作时热点被关"会记入手动锁存
+#     （hotspot-user-off.flag），灭屏看门狗见到锁存文件就不再拉起；
+#     每次按一键灭屏 = 重新接管"保热点"，锁存自动解除。
 $ErrorActionPreference = 'SilentlyContinue'
 
 $logDir = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) 'ScreenOff'
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 $logFile = Join-Path $logDir 'screen-off.log'
 function Log($m) { Add-Content -LiteralPath $logFile -Value ("{0}  {1}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $m) }
+
+# ---- 手动关闭锁存（v5）：与 always-awake 共用；灭屏守卫只读不写 ----
+$hotspotUserOffFlag = Join-Path $logDir 'hotspot-user-off.flag'
+function Test-UserOffLatch { return (Test-Path -LiteralPath $hotspotUserOffFlag) }
+function Clear-UserOffLatch { Remove-Item -LiteralPath $hotspotUserOffFlag -Force -ErrorAction SilentlyContinue }
 
 Log ('START pid=' + $PID + ' ps=' + $PSVersionTable.PSVersion.ToString())
 
@@ -63,6 +71,7 @@ try {
 $script:hotspotWatch = $false
 $script:sawHotspotOn = $false
 $script:netState = ''
+$script:manualLogged = $false
 $script:asTaskOp = $null
 try {
   Add-Type -AssemblyName System.Runtime.WindowsRuntime
@@ -91,6 +100,10 @@ function Start-HotspotIfNeeded($mgr) {
     return
   }
   if ($st -eq 'InTransition') { return }
+  if (Test-UserOffLatch) {
+    if (-not $script:manualLogged) { $script:manualLogged = $true; Log 'watchdog: hotspot off — user manually disabled, leaving it off' }
+    return
+  }
   Log ('watchdog: hotspot ' + $st + ', forcing back on')
   $res = Await-Op $mgr.StartTetheringAsync() ([Windows.Networking.NetworkOperators.NetworkOperatorTetheringOperationResult])
   Log ('watchdog: restart status=' + $res.Status.ToString() + ' msg=' + $res.AdditionalErrorMessage)
@@ -122,6 +135,10 @@ function Test-HotspotAlive {
         } catch { }
       }
       if ($candidate) {
+        if (Test-UserOffLatch) {
+          if (-not $script:manualLogged) { $script:manualLogged = $true; Log 'watchdog: hotspot off — user manually disabled, leaving it off' }
+          return
+        }
         Log ('watchdog: hotspot ' + $candidate.TetheringOperationalState.ToString() + ', forcing back on (fallback profile)')
         $res = Await-Op $candidate.StartTetheringAsync() ([Windows.Networking.NetworkOperators.NetworkOperatorTetheringOperationResult])
         Log ('watchdog: restart status=' + $res.Status.ToString() + ' msg=' + $res.AdditionalErrorMessage)
@@ -145,6 +162,9 @@ Log 'display-off sent'
 # 2) hold PowerRequest(SystemRequired): blocks idle sleep while the screen is off
 [ScreenOff]::KeepAwake()
 Log 'keep-awake armed'
+
+# 2a) 按一键灭屏 = 重新接管"保热点"：解除手动关闭锁存（之后若又手动关热点，锁存会重新建立）
+if (Test-UserOffLatch) { Clear-UserOffLatch; Log 'manual-off latch cleared — screen-off re-arm keeps hotspot alive' }
 
 # 2b) 武装时立刻检查一次热点；热点若没在线也会被拉起（保持热点常活）
 if ($script:hotspotWatch) { Test-HotspotAlive }
