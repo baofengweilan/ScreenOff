@@ -37,7 +37,8 @@ if (-not (Test-Path $marker) -and (Test-Path $hardener)) {
   } else {
     Log 'hardening: requesting one-time elevation (UAC)...'
     try {
-      $hp = Start-Process -FilePath 'powershell.exe' -ArgumentList ('-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $hardener + '"') -Verb RunAs -PassThru -Wait -ErrorAction Stop
+      $pwshPath = (Get-Command pwsh -ErrorAction Stop).Source
+      $hp = Start-Process -FilePath $pwshPath -ArgumentList ('-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $hardener + '"') -Verb RunAs -PassThru -Wait -ErrorAction Stop
       Log ('hardening: elevated child exit=' + $hp.ExitCode)
     } catch {
       Log ('hardening: elevation cancelled or failed: ' + $_.Exception.Message)
@@ -90,7 +91,7 @@ try {
   })[0]
   if ($script:asTaskOp) { $script:hotspotWatch = $true; Log 'hotspot watchdog: WinRT loaded' }
 } catch {
-  Log ('hotspot watchdog: WinRT unavailable, disabled: ' + $_.Exception.Message)
+  Log ('WATCHDOG DISABLED: WinRT tethering control unavailable in this PowerShell edition (ps=' + $PSVersionTable.PSVersion + ') — hotspot auto-revive is off :: ' + $_.Exception.Message)
 }
 
 function Await-Op($op, [Type]$t, [int]$timeoutMs = 15000) {
