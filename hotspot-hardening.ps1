@@ -85,7 +85,7 @@ Log 'power plan updated (wireless=max perf, PCIe link pm=off)'
 
 # A6) 热点"无设备连接自动关闭"开关置 0（Win10/11 对应 PeerlessTimeoutEnabled）
 try {
-  Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\ICSSVC\Settings' -Name PeerlessTimeoutEnabled -Value 0 -Type DWord -ErrorAction Stop
+  Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\ICSSVC\Settings' -Name PeerlessTimeoutEnabled -Value 0 -ErrorAction Stop
   Log 'ICSSVC PeerlessTimeoutEnabled=0'
 } catch {
   Log ('ICSSVC FAIL :: ' + $_.Exception.Message)
