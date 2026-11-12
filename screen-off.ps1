@@ -37,8 +37,11 @@ if (-not (Test-Path $marker) -and (Test-Path $hardener)) {
   } else {
     Log 'hardening: requesting one-time elevation (UAC)...'
     try {
-      $pwshPath = (Get-Command pwsh -ErrorAction Stop).Source
-      $hp = Start-Process -FilePath $pwshPath -ArgumentList ('-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $hardener + '"') -Verb RunAs -PassThru -Wait -ErrorAction Stop
+      # 双引擎：pwsh 7 优先，5.1 兜底（5.1-only 机器上加固也能跑）
+      $elev = $null
+      try { $elev = (Get-Command pwsh -ErrorAction Stop).Source } catch { }
+      if (-not $elev) { $elev = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe' }
+      $hp = Start-Process -FilePath $elev -ArgumentList ('-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $hardener + '"') -Verb RunAs -PassThru -Wait -ErrorAction Stop
       Log ('hardening: elevated child exit=' + $hp.ExitCode)
     } catch {
       Log ('hardening: elevation cancelled or failed: ' + $_.Exception.Message)
