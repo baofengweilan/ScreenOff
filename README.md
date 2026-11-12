@@ -25,10 +25,13 @@ The definitive fix is to take Modern Standby out of the equation, so screen-off 
 
 ## Quick start
 
-Run in PowerShell 7 (pwsh):
+Run with either engine — right-click install.ps1 → "Run with PowerShell" also works:
 
 ```powershell
-pwsh -ExecutionPolicy Bypass -File .\install.ps1    # add -NoStartup if you don't want the logon autostart
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1   # Windows PowerShell 5.1 (built into Windows)
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\install.ps1         # or PowerShell 7
+# -NoStartup skips the logon autostart; -UseWindowsPowerShell forces 5.1
+# shortcuts for the full hotspot watchdog
 ```
 
 Then double-click the desktop shortcut to turn the screen off. Touch the mouse or keyboard to come back.
@@ -51,8 +54,8 @@ Notes:
 ## Requirements
 
 - Windows 10 / 11 (tested on Windows 10 19045 desktop with Intel Wi-Fi 6 AX201 + Realtek 2.5GbE, a Modern Standby machine)
-- PowerShell 7 (pwsh) — required by the installer and the shortcuts
-- For the hotspot watchdog: a Wi-Fi adapter that supports Wi-Fi Direct SoftAP. The watchdog drives the hotspot through the WinRT API, which is only projected in Windows PowerShell 5.1 — under pwsh it disables itself automatically (see logs) and hotspot auto-revive is off. After Modern Standby is disabled this watchdog is pure insurance and normally never fires.
+- Runs under Windows PowerShell 5.1 (built into Windows) or PowerShell 7 (pwsh) — the installer auto-detects the engine and the shortcuts follow it. `-UseWindowsPowerShell` forces 5.1.
+- For the hotspot watchdog: a Wi-Fi adapter that supports Wi-Fi Direct SoftAP. The watchdog drives the hotspot through the WinRT API, which is only projected in Windows PowerShell 5.1 — so 5.1 shortcuts get the fully functional watchdog, while pwsh shortcuts self-disable it (see logs; hotspot auto-revive is off). After Modern Standby is disabled this watchdog is pure insurance and normally never fires.
 
 ## Logs & troubleshooting
 
@@ -91,10 +94,12 @@ MIT — see [LICENSE](LICENSE).
 
 ## 快速开始
 
-在 PowerShell 7（pwsh）中运行：
+两种引擎都可以——右键 install.ps1 →"使用 PowerShell 运行"也行：
 
 ```powershell
-pwsh -ExecutionPolicy Bypass -File .\install.ps1    # 不想开机自启就加 -NoStartup
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1   # Windows PowerShell 5.1（系统自带）
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\install.ps1         # 或 PowerShell 7
+# -NoStartup 跳过开机自启；-UseWindowsPowerShell 强制 5.1 快捷方式（完整热点看门狗）
 ```
 
 然后双击桌面快捷方式灭屏；动一下鼠标或键盘即可回来。
@@ -117,8 +122,8 @@ pwsh -ExecutionPolicy Bypass -File .\install.ps1    # 不想开机自启就加 -
 ## 运行环境
 
 - Windows 10 / 11（实测：Windows 10 19045 台式机，Intel Wi-Fi 6 AX201 + Realtek 2.5GbE，现代待机机型）
-- PowerShell 7（pwsh）——安装与快捷方式依赖它
-- 热点看门狗需要一块支持 Wi-Fi Direct SoftAP 的无线网卡；看门狗走 WinRT API（仅 Windows PowerShell 5.1 提供投影），在 pwsh 下会自动停用（日志可见），热点自动复活随之关闭。禁用现代待机之后，这个看门狗只是保险，平时不会触发。
+- Windows PowerShell 5.1（系统自带）或 PowerShell 7（pwsh）——安装器自动检测引擎，快捷方式跟随所选引擎；`-UseWindowsPowerShell` 可强制 5.1
+- 热点看门狗需要一块支持 Wi-Fi Direct SoftAP 的无线网卡；看门狗走 WinRT API（仅 Windows PowerShell 5.1 提供投影）——5.1 快捷方式下全功能，pwsh 快捷方式下自动停用（日志可见），热点自动复活随之关闭。禁用现代待机之后，这个看门狗只是保险，平时不会触发。
 
 ## 日志与排查
 
