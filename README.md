@@ -25,11 +25,10 @@ The definitive fix is to take Modern Standby out of the equation, so screen-off 
 
 ## Quick start
 
-Run in PowerShell (5.1 or 7):
+Run in PowerShell 7 (pwsh):
 
 ```powershell
-Set-ExecutionPolicy -Scope Process Bypass -Force
-.\install.ps1              # add -NoStartup if you don't want the logon autostart
+pwsh -ExecutionPolicy Bypass -File .\install.ps1    # add -NoStartup if you don't want the logon autostart
 ```
 
 Then double-click the desktop shortcut to turn the screen off. Touch the mouse or keyboard to come back.
@@ -51,8 +50,8 @@ Notes:
 ## Requirements
 
 - Windows 10 / 11 (tested on Windows 10 19045 desktop with Intel Wi-Fi 6 AX201 + Realtek 2.5GbE, a Modern Standby machine)
-- Windows PowerShell 5.1 (built-in) — also runs under PowerShell 7
-- For the hotspot watchdog: a Wi-Fi adapter that supports Wi-Fi Direct SoftAP (any modern laptop/Wi-Fi card)
+- PowerShell 7 (pwsh) — required by the installer and the shortcuts
+- For the hotspot watchdog: a Wi-Fi adapter that supports Wi-Fi Direct SoftAP. The watchdog drives the hotspot through the WinRT API, which is only projected in Windows PowerShell 5.1 — under pwsh it disables itself automatically (see logs) and hotspot auto-revive is off. After Modern Standby is disabled this watchdog is pure insurance and normally never fires.
 
 ## Logs & troubleshooting
 
@@ -91,11 +90,10 @@ MIT — see [LICENSE](LICENSE).
 
 ## 快速开始
 
-在 PowerShell（5.1 或 7）中运行：
+在 PowerShell 7（pwsh）中运行：
 
 ```powershell
-Set-ExecutionPolicy -Scope Process Bypass -Force
-.\install.ps1              # 不想开机自启就加 -NoStartup
+pwsh -ExecutionPolicy Bypass -File .\install.ps1    # 不想开机自启就加 -NoStartup
 ```
 
 然后双击桌面快捷方式灭屏；动一下鼠标或键盘即可回来。
@@ -117,8 +115,8 @@ Set-ExecutionPolicy -Scope Process Bypass -Force
 ## 运行环境
 
 - Windows 10 / 11（实测：Windows 10 19045 台式机，Intel Wi-Fi 6 AX201 + Realtek 2.5GbE，现代待机机型）
-- Windows PowerShell 5.1（系统自带）——PowerShell 7 下同样可运行
-- 热点看门狗需要一块支持 Wi-Fi Direct SoftAP 的无线网卡（现代笔记本/网卡均支持）
+- PowerShell 7（pwsh）——安装与快捷方式依赖它
+- 热点看门狗需要一块支持 Wi-Fi Direct SoftAP 的无线网卡；看门狗走 WinRT API（仅 Windows PowerShell 5.1 提供投影），在 pwsh 下会自动停用（日志可见），热点自动复活随之关闭。禁用现代待机之后，这个看门狗只是保险，平时不会触发。
 
 ## 日志与排查
 
