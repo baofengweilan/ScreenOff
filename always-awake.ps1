@@ -56,7 +56,7 @@ try {
     $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncOperation`1'
   })[0]
   if ($script:asTaskOp) { Log 'hotspot watchdog: WinRT loaded' }
-} catch { Log ('watchdog disabled: ' + $_.Exception.Message) }
+} catch { Log ('WATCHDOG DISABLED: WinRT tethering control unavailable in this PowerShell edition (ps=' + $PSVersionTable.PSVersion + ') — hotspot auto-revive is off :: ' + $_.Exception.Message) }
 
 function Await-Op($op, [Type]$t) {
   $m = $script:asTaskOp.MakeGenericMethod($t)
