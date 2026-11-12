@@ -45,6 +45,7 @@ Notes:
 - Keep-awake: `SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED)`; released when `GetLastInputInfo` reports new input after a ≥ 5 s silent gap.
 - Hotspot watchdog: `NetworkOperatorTetheringManager.TetheringOperationalState`, revived via `StartTetheringAsync`. When no internet connection profile is visible (typical during standby wake windows), it falls back to probing **all** connection profiles instead of skipping — this was the difference between a hotspot dead for 10 hours and one revived within a minute.
 - Modern Standby disable: `HKLM\SYSTEM\CurrentControlSet\Control\Power\PlatformAoAcOverride = 0` (DWORD).
+- Zero-flash launch: the shortcuts run through a windowless VBScript wrapper (`wscript.exe`), so neither the double-click nor the logon ever flashes a console window — the pwsh console is created hidden from the first frame.
 - **Manual-off respect (sticky)**: if the hotspot is turned off while someone is using the PC (keyboard/mouse input in the last 90 s), the watchdog treats it as intentional — it records a latch file (`%LOCALAPPDATA%\ScreenOff\hotspot-user-off.flag`) and the hotspot **stays off**: through screen-offs, reboots and everything else. Only turning the hotspot back on manually clears the latch (the watchdog notices the state returning to On and resumes protection). Unattended drops (no user input) are still treated as "Windows killed it" and revived.
 
 ## Requirements
@@ -110,6 +111,7 @@ pwsh -ExecutionPolicy Bypass -File .\install.ps1    # 不想开机自启就加 -
 - 防睡眠：`SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED)`；`GetLastInputInfo` 报告出现"≥5 秒静默后的新输入"时释放。
 - 热点看门狗：`NetworkOperatorTetheringManager.TetheringOperationalState` 探活，`StartTetheringAsync` 拉起。取不到 internet 连接配置文件时（待机唤醒窗口内的典型现象），不跳过，而是遍历**所有**连接配置文件继续探活——这是"热点死了 10 小时没人管"和"一分钟内被拉起"的分水岭。
 - 禁用现代待机：`HKLM\SYSTEM\CurrentControlSet\Control\Power\PlatformAoAcOverride = 0`（DWORD）。
+- 零闪烁启动：快捷方式经由无窗口的 VBScript 包装（`wscript.exe`）启动 pwsh——控制台从第一帧起就是隐藏的，双击和登录都不会闪终端。
 - **尊重手动关闭（完全粘滞）**：如果热点是在"有人正在使用电脑"时被关掉的（最近 90 秒内有键鼠输入），看门狗会视为你的主动操作——写入锁存文件（`%LOCALAPPDATA%\ScreenOff\hotspot-user-off.flag`），此后热点**一直保持关闭**：灭屏多少次、重启多少次都不会再自动打开。唯一解除方式是你手动把热点重新打开（看门狗观察到状态变回 On，即恢复自动保护）。"无人操作时热点悄悄死掉"仍会被判定为系统所杀并自动拉起。
 
 ## 运行环境
